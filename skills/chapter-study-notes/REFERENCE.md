@@ -6,27 +6,12 @@
 - Body: bullets and nested bullets only; no prose paragraphs.
   - Level 1: the point. Level 2+: reasons, examples, numbers, caveats, trade-offs.
   - **Bold** each term on first definition. Keep exact figures, names, and system/paper citations.
-  - Tables/code in source: keep tables as md tables, summarise code as bullets of what it shows.
+  - Tables in source: keep as md tables.
+  - Code in source: copy every important multiline code block verbatim as a fenced block (same language tag), plus bullets on what it shows; skip only trivial or repeated snippets. Place it under the top-level bullet it belongs to, indented as that bullet's child, after the bullet's nested children. If a nested bullet is what the code illustrates, that bullet says so (`(code below)`), so the block never sits deep in the tree.
   - Figures (`![alt](url)` lines in source): describe each in one bullet, then embed it as the next child bullet `- ![Figure N](<same url as source>)`, under the bullet that cites it, in the same section as in the source. Never drop, rewrite or localise the URL. `check` fails on any source figure missing from, or in a different section of, the notes.
 - Keep: definitions, "why", comparisons, pros/cons, failure modes, examples, edge cases, formulas, chapter summary points.
 - Skip only: pure filler, transitions, repeated restatements. When unsure, keep.
 - Add no sections beyond the original headings, except a final `## Key trade-offs at a glance` table if the chapter compares 3+ options.
-
-## Keyword table
-
-Written last, after notes, quiz and key are final. Goes at the top of the notes, before the first heading, with no heading of its own:
-
-```
-| Section | Keywords |
-| --- | --- |
-| Relational Versus Document Models | Codd 1970, impedance, ORM, N+1 problem, LinkedIn résumé, materialized timelines, ... |
-```
-
-- One row per H1 of the source, in order (if the source has a single H1, the chapter title, use the H2s). Section = heading text verbatim. Skip H1s that add no new content (Summary, Further reading, Key trade-offs).
-- Keywords cover everything nested under that H1. Comma-separated, no `|` or extra commas inside a keyword.
-- A keyword is a cue that brings back a concept, example, name or number the student has met in the notes (`N+1 problem`, `crash halfway`, `4 lines vs 31 lines`), not a restatement of a heading.
-- **No word of any keyword may appear in any heading of the notes** (all levels; ignoring case, a trailing plural `s`, and `of to and a the in`). Reword: `schema-on-read` becomes `static vs dynamic typing`. `check` enforces this.
-- Keep about 8-35 per row (`check` warns outside 5-40). Prune before writing: drop trivia (quotes, standard dates), lists of product names, duplicates of another keyword, and bare words that cue nothing.
 
 ## Trunks
 
@@ -79,10 +64,9 @@ Test understanding of the core concepts the chapter teaches, not recall of what 
   - Integrate by combining concepts that interact (e.g. a metric choice with a failure mode, a scaling choice with an operations cost, a fault-tolerance limit with a maintenance procedure). Ask the student to resolve the tension, not list the parts.
   - Short answers ask "explain why" or "compare", not "define" or "list".
   - Prefer, for at least a quarter of MCQs, "choose + one-sentence reason" (pick the option and say why), which cuts guessing.
-  - True/false items state a plausible misconception; the justification must name the principle that refutes it. A bare T/F earns no credit.
   - Everything must be answerable from the note by reasoning. Do not require outside facts, and do not introduce concepts the chapter does not teach.
-- **Mix** (guidance only; adjust to chapter): about 30% MCQ (4 options, one correct), 15% true/false with justification (mix true and false statements), 20% short answer, 35% scenario/design (given a system and requirements, choose and justify). If a type cannot hold A/I questions for this chapter, use fewer of it; a type slot never justifies a recall question.
-- **Structure**: split by top-level section of the source (H1; H2 if the source has a single H1), in source order, each under `# <heading verbatim>`; omit sections with no questions. Inside a section, group by question type under `## ` headings in this order: multiple choice, true/false, short answer, scenarios; interleave concepts within a type. A question whose `Review:` headings fall under 2+ top-level sections is cross-section: it goes in a final `# Cross-section` part (same type sub-groups), never in a section; a question whose headings fall under one section never goes there. Number questions continuously from 1 across the whole quiz.
+- **Mix** (guidance only; adjust to chapter): about 35% MCQ (4 options, one correct), 25% short answer, 40% scenario/design (given a system and requirements, choose and justify). No true/false questions. If a type cannot hold A/I questions for this chapter, use fewer of it; a type slot never justifies a recall question.
+- **Structure**: split by top-level section of the source (H1; H2 if the source has a single H1), in source order, each under `# <heading verbatim>`; omit sections with no questions. Inside a section, group by question type under `## ` headings in this order: multiple choice, short answer, scenarios; interleave concepts within a type. A question whose `Review:` headings fall under 2+ top-level sections is cross-section: it goes in a final `# Cross-section` part (same type sub-groups), never in a section; a question whose headings fall under one section never goes there. Number questions continuously from 1 across the whole quiz.
 - **Form (MCQ)**: each wrong option encodes one real misconception or a right idea applied to the wrong situation; options are parallel in grammar and level of detail. Count characters: the correct option may be the longest in at most 1 of 4 MCQs. Spread correct letters across A-D. No "all/none of the above", no absurd distractors. No hints in wording.
 - **No leakage**: a question's stem or options must not state the answer to another question (e.g. an MCQ defining a term that a short-answer question asks you to define). When two questions test the same idea, keep the better one or ask about different aspects.
 - `<quiz>`: header line "Attempt closed-book; write a confidence (1-3) beside each answer, then compare with the key." Then `# <section>` headings, `## <type>` part headings, question number, text, options. Nothing else.
@@ -100,7 +84,7 @@ Test understanding of the core concepts the chapter teaches, not recall of what 
 - Checklist: `## Core concepts` first (`- C1 name: ...` lines, then `Interactions: C1+C3 (...), ...`), then one `## <heading text>` per source heading (all at `##`, text only) with `- H1.2-01 point` items.
 - Notes: headings identical to the source (same level and text, same order).
 - Trunks: headings identical to the source (same level, text, order); non-empty text above the first heading and under each heading (`check` warns on empty sections).
-- `<quiz>`: line 1 is the closed-book header; sections as `# <top-level source heading>` in source order, then optionally `# Cross-section`; inside each, parts as `## Multiple choice`, `## True/false`, `## Short answer`, `## Scenarios` (in that order; omit empty ones); each question starts with `**Q<n>.** <text>`; MCQ options on their own lines `- A. text` ... `- D. text`.
+- `<quiz>`: line 1 is the closed-book header; sections as `# <top-level source heading>` in source order, then optionally `# Cross-section`; inside each, parts as `## Multiple choice`, `## Short answer`, `## Scenarios` (in that order; omit empty ones); each question starts with `**Q<n>.** <text>`; MCQ options on their own lines `- A. text` ... `- D. text`.
 - `<answers>`: `## Answers`, then per question `### Q<n>` followed by field lines (bullets/bold allowed): `Answer:` (MCQ: starts with the letter), `Level:` R|A|I, `Difficulty:` E|M|H, `C-IDs:` C1, C4, `Checklist:` H1.2-01, ..., `Review:` <note heading>[; <note heading>...]. Then `## Review map`.
 - Chunk parts (long files): same formats, files `<parts>/<X>-{checklist,notes,quiz,answers}.md` (no trunks in parts), IDs prefixed with the chunk letter (`X-H3.2-07`, `X-C1`), questions numbered from 1 within the part. Do not add `## Key trade-offs at a glance` or `## Review map` in parts. Chunk quizzes use the same `# <section>` / `## <type>` headings.
 

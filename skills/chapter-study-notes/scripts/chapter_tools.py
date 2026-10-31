@@ -28,13 +28,12 @@ CID = r'(?:[A-Z]+-)?C\d+'
 HID = r'(?:[A-Z]+-)?H\d+(?:\.\d+)*-\d+'
 QSTART = re.compile(r'^\*\*Q(\d+)\.\*\*\s*')
 KEYHEAD = re.compile(r'^###\s+Q(\d+)\b')
-TYPES = [('mc', 'Multiple choice', 'multiple'), ('tf', 'True/false', 'true'),
+TYPES = [('mc', 'Multiple choice', 'multiple'),
          ('sa', 'Short answer', 'short'), ('sc', 'Scenarios', 'scenario')]
 QUIZ_HEADER = 'Attempt closed-book; write a confidence (1-3) beside each answer, then compare with the key.'
 REATTEMPT = 'Re-attempt missed or low-confidence items after 2 days and again after 1 week.'
 IMG = re.compile(r'^\s*(?:[-*+]\s+)?!\[[^\]]*\]\(([^)\s]+)')
 CROSS = 'Cross-section'
-STOP = {'of', 'to', 'and', 'a', 'the', 'in'}
 BANNED = re.compile(r'according to the (chapter|book|text)|the (chapter|book|text) '
                     r'(says|advises|concludes|presents|claims)|examples from the chapter', re.I)
 
@@ -71,11 +70,6 @@ def figures(text, lo=0, hi=10**9):
         elif not fence and lo <= i <= hi and (m := IMG.match(l)):
             out.setdefault(m[1], sec)  # ponytail: markdown images only, not <img> tags
     return out
-
-
-def words(t):
-    """Lowercased words of t, minus STOP and a trailing plural s, for the keyword-vs-heading comparison."""
-    return {w[:-1] if w.endswith('s') and len(w) > 3 else w for w in re.findall(r'[\w]+', t.lower()) if w not in STOP}
 
 
 COVER = 0.6  # DDIA ch04: intact notes all >= 0.62; flags 65% of single-line drops (see doc/coverage-check.md)
@@ -123,20 +117,6 @@ def coverage(checklist, notes):
             miss = sorted(it - got) if ok else sorted(nums)
             out.append((m[1], sec, len(got) / len(it) if it else 1.0, miss))
     return out
-
-
-def keyword_table(notes):
-    """[(section, [keywords])] from the table at the very top of the notes ([] if none)."""
-    rows = []
-    for l in notes.splitlines():
-        if not l.strip():
-            continue
-        if not l.lstrip().startswith('|'):
-            break
-        rows.append([c.strip() for c in l.strip().strip('|').split('|')])
-    if not rows or [c.lower() for c in rows[0]] != ['section', 'keywords']:
-        return []
-    return [(r[0], [k.strip() for k in r[1].split(',') if k.strip()]) for r in rows[2:] if len(r) == 2]
 
 
 def outp(a, k):
@@ -321,21 +301,6 @@ def check(a):
             for (ln, _, t), nxt in zip(headings(trunks), hl[1:]):
                 if not ''.join(tl[ln:nxt - 1]).strip():
                     W(f'trunks: no summary under "{t}"')
-    if not chunk:
-        tops, _ = sections(src)
-        hw = set().union(*(words(t) for _, _, t in headings(txt['notes'])))
-        table = keyword_table(txt['notes'])
-        for sec, ks in table:
-            if sec not in tops:
-                F(f'keywords: row "{sec}" is not a top-level section of the source')
-            if not 5 <= len(ks) <= 40:
-                W(f'keywords: {len(ks)} keywords for "{sec}" (typical 8-35)')
-            for k in ks:
-                if bad := sorted(words(k) & hw):
-                    F(f'keywords: "{k}" ({sec}) uses heading words {bad}')
-        for t in tops if table else []:
-            if t not in [s for s, _ in table]:
-                W(f'keywords: no row for "{t}" (fine if it adds no new content)')
     have = figures(txt['notes'])
     for u, sec in figures(src, lo, hi).items():
         if u not in have:
@@ -387,14 +352,14 @@ def check(a):
     rank = {t: i for i, t in enumerate(tops + [CROSS])}
     order = [next((i for i, (k, _, _) in enumerate(TYPES) if k == q['type']), -1) for q in qs]
     if -1 in order:
-        F('quiz: a question sits outside a recognised part heading (multiple choice/true-false/short answer/scenarios)')
+        F('quiz: a question sits outside a recognised part heading (multiple choice/short answer/scenarios)')
     for sec in sorted({q['sec'] for q in qs if q['sec'] not in rank}, key=str):
         F(f'quiz: question(s) under "{sec}", which is not a top-level source heading or "{CROSS}" (use "# <heading>" per section)')
     if -1 not in order and all(q['sec'] in rank for q in qs):
         keys = [(rank[q['sec']], o) for q, o in zip(qs, order)]
         if keys != sorted(keys):
             F(f'quiz: sections must follow source order with "{CROSS}" last, and parts within a section '
-              'must be multiple choice, true/false, short answer, scenarios')
+              'must be multiple choice, short answer, scenarios')
 
     info = {}
     for q in qs:

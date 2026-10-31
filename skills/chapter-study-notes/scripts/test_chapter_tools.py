@@ -157,31 +157,6 @@ class Tools(unittest.TestCase):
             moved = base.replace('  - ![Fig 1](http://x/a.png)\n', '').replace('- b\n', '- b\n  - ![Fig 1](http://x/a.png)\n')
             self.assertIn('figure under "Beta" but source has it under "Alpha"', run(moved))
 
-    def test_keyword_table_rejects_heading_words_and_unknown_sections(self):
-        src = '# One\n\ntext\n\n# Two Things\n\ntext\n'
-        with tempfile.TemporaryDirectory() as t:
-            t = Path(t)
-            (t / 'ch.md').write_text(src)
-            for k in ('checklist', 'quiz', 'answers'):
-                (t / f'ch-{k}.md').write_text('x')
-
-            def run(table):
-                (t / 'ch-notes.md').write_text(table + '# One\n\n- a\n\n# Two Things\n\n- b\n')
-                buf = io.StringIO()
-                with contextlib.redirect_stdout(buf):
-                    ct.main(['check', str(t / 'ch.md')])
-                return buf.getvalue()
-
-            head = '| Section | Keywords |\n| --- | --- |\n'
-            self.assertNotIn('keywords:', run(''))
-            ok = run(head + '| One | alpha, beta, gamma, delta, epsilon |\n| Two Things | zeta, eta, theta, iota, kappa |\n\n')
-            self.assertNotIn('keywords:', ok)
-            bad = run(head + '| One | alpha, thing, gamma, delta, epsilon |\n| Nope | a, b, c, d, e |\n\n')
-            self.assertIn('"thing" (One) uses heading words', bad)
-            self.assertIn('row "Nope" is not a top-level', bad)
-            self.assertIn('no row for "Two Things"', bad)
-            self.assertEqual(ct.keyword_table('x\n| Section | Keywords |\n'), [])
-
     def test_output_names_drop_title_for_chnn_sources(self):
         mk = lambda src, base=None: type('A', (), {'src': src, 'base': base})
         self.assertEqual(ct.outp(mk('/d/ch03 Data models.md'), 'notes'), Path('/d/ch03 notes.md'))

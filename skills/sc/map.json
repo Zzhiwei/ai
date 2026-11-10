@@ -1,5 +1,7 @@
 {
-  "gcp": "git commit the changes, then push to remote. If on the default branch (main/master), create a feature branch first.",
-  "rbfp": "Update local main (fetch, fast-forward), rebase the current branch onto it, then git push --force-with-lease.",
+  "gc": "git commit the changes. Flag -f: first ensure a feature branch (create one if on the default branch main/master), then commit.",
+  "gp": "Push the current branch to remote (set upstream if needed).",
+  "rb": "Update local main (fetch, fast-forward), then rebase the current branch onto it.",
+  "fp": "git push --force-with-lease the current branch.",
   "vb": "Run `vbuild` in the current git repo root (shell command defined in ~/zsh)."
 }

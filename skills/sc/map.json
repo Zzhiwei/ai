@@ -1,0 +1,5 @@
+{
+  "gcp": "git commit the changes, then push to remote. If on the default branch (main/master), create a feature branch first.",
+  "rbfp": "Update local main (fetch, fast-forward), rebase the current branch onto it, then git push --force-with-lease.",
+  "vb": "Run `vbuild` in the current git repo root (shell command defined in ~/zsh)."
+}
